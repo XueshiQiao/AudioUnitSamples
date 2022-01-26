@@ -18,6 +18,10 @@
 		D4003042279FEE60002E9D53 /* SampleListViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4003040279FEE60002E9D53 /* SampleListViewController.xib */; };
 		D4003045279FF307002E9D53 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4003044279FF307002E9D53 /* AudioToolbox.framework */; };
 		D4003049279FFFA5002E9D53 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4003048279FFFA5002E9D53 /* AVFoundation.framework */; };
+		D40C2C6A27A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D40C2C6827A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm */; };
+		D40C2C6B27A15022002E0ABA /* AudioUnitRecordOnlyViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D40C2C6927A15022002E0ABA /* AudioUnitRecordOnlyViewController.xib */; };
+		D40C2C6E27A157C8002E0ABA /* CommonUtils.mm in Sources */ = {isa = PBXBuildFile; fileRef = D40C2C6D27A157C8002E0ABA /* CommonUtils.mm */; };
+		D40C2C7227A16668002E0ABA /* AudioFileWriter.mm in Sources */ = {isa = PBXBuildFile; fileRef = D40C2C7127A16668002E0ABA /* AudioFileWriter.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +43,13 @@
 		D4003044279FF307002E9D53 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		D4003046279FF30C002E9D53 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = System/Library/Frameworks/AudioUnit.framework; sourceTree = SDKROOT; };
 		D4003048279FFFA5002E9D53 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
+		D40C2C6727A15022002E0ABA /* AudioUnitRecordOnlyViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioUnitRecordOnlyViewController.h; sourceTree = "<group>"; };
+		D40C2C6827A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioUnitRecordOnlyViewController.mm; sourceTree = "<group>"; };
+		D40C2C6927A15022002E0ABA /* AudioUnitRecordOnlyViewController.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = AudioUnitRecordOnlyViewController.xib; sourceTree = "<group>"; };
+		D40C2C6C27A157C8002E0ABA /* CommonUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = CommonUtils.h; sourceTree = "<group>"; };
+		D40C2C6D27A157C8002E0ABA /* CommonUtils.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = CommonUtils.mm; sourceTree = "<group>"; };
+		D40C2C7027A16668002E0ABA /* AudioFileWriter.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AudioFileWriter.h; sourceTree = "<group>"; };
+		D40C2C7127A16668002E0ABA /* AudioFileWriter.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AudioFileWriter.mm; sourceTree = "<group>"; };
 		D410515E27A134ED00764794 /* AudioUnitSamples.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = AudioUnitSamples.entitlements; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -75,6 +86,8 @@
 		D400301F279FED46002E9D53 /* AudioUnitSamples */ = {
 			isa = PBXGroup;
 			children = (
+				D40C2C6F27A16648002E0ABA /* Common */,
+				D40C2C6627A14FDC002E0ABA /* SamplesViewControllers */,
 				D410515E27A134ED00764794 /* AudioUnitSamples.entitlements */,
 				D4003020279FED46002E9D53 /* AppDelegate.h */,
 				D4003021279FED46002E9D53 /* AppDelegate.m */,
@@ -87,9 +100,6 @@
 				D400303E279FEE60002E9D53 /* SampleListViewController.h */,
 				D400303F279FEE60002E9D53 /* SampleListViewController.m */,
 				D4003040279FEE60002E9D53 /* SampleListViewController.xib */,
-				D4003039279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.h */,
-				D400303A279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.mm */,
-				D400303B279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.xib */,
 			);
 			path = AudioUnitSamples;
 			sourceTree = "<group>";
@@ -102,6 +112,30 @@
 				D4003044279FF307002E9D53 /* AudioToolbox.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		D40C2C6627A14FDC002E0ABA /* SamplesViewControllers */ = {
+			isa = PBXGroup;
+			children = (
+				D4003039279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.h */,
+				D400303A279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.mm */,
+				D400303B279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.xib */,
+				D40C2C6727A15022002E0ABA /* AudioUnitRecordOnlyViewController.h */,
+				D40C2C6827A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm */,
+				D40C2C6927A15022002E0ABA /* AudioUnitRecordOnlyViewController.xib */,
+			);
+			path = SamplesViewControllers;
+			sourceTree = "<group>";
+		};
+		D40C2C6F27A16648002E0ABA /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				D40C2C6C27A157C8002E0ABA /* CommonUtils.h */,
+				D40C2C6D27A157C8002E0ABA /* CommonUtils.mm */,
+				D40C2C7027A16668002E0ABA /* AudioFileWriter.h */,
+				D40C2C7127A16668002E0ABA /* AudioFileWriter.mm */,
+			);
+			path = Common;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -165,6 +199,7 @@
 				D4003042279FEE60002E9D53 /* SampleListViewController.xib in Resources */,
 				D400302D279FED47002E9D53 /* Assets.xcassets in Resources */,
 				D400303D279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.xib in Resources */,
+				D40C2C6B27A15022002E0ABA /* AudioUnitRecordOnlyViewController.xib in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -176,7 +211,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				D4003041279FEE60002E9D53 /* SampleListViewController.m in Sources */,
+				D40C2C6E27A157C8002E0ABA /* CommonUtils.mm in Sources */,
 				D400303C279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.mm in Sources */,
+				D40C2C7227A16668002E0ABA /* AudioFileWriter.mm in Sources */,
+				D40C2C6A27A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm in Sources */,
 				D4003028279FED46002E9D53 /* ViewController.m in Sources */,
 				D4003022279FED46002E9D53 /* AppDelegate.m in Sources */,
 				D4003033279FED47002E9D53 /* main.m in Sources */,

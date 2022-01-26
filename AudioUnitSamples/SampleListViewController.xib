@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19529" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
+<document type="com.apple.InterfaceBuilder3.CocoaTouch.XIB" version="3.0" toolsVersion="19455" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" useSafeAreas="YES" colorMatched="YES">
     <device id="retina6_1" orientation="portrait" appearance="light"/>
     <dependencies>
         <deployment identifier="iOS"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19519"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="19454"/>
         <capability name="Safe area layout guides" minToolsVersion="9.0"/>
         <capability name="System colors in document resources" minToolsVersion="11.0"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
@@ -11,6 +11,7 @@
     <objects>
         <placeholder placeholderIdentifier="IBFilesOwner" id="-1" userLabel="File's Owner" customClass="SampleListViewController">
             <connections>
+                <outlet property="samplesTableView" destination="z5Q-0k-Mkn" id="rhe-UT-nLh"/>
                 <outlet property="view" destination="i5M-Pr-FkT" id="sfx-zR-JGt"/>
             </connections>
         </placeholder>
@@ -19,22 +20,20 @@
             <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
             <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
             <subviews>
-                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="mvM-Xl-lqB">
-                    <rect key="frame" x="130.5" y="257" width="153" height="31"/>
-                    <state key="normal" title="Button"/>
-                    <buttonConfiguration key="configuration" style="filled" title="Basic Record &amp; Play"/>
-                    <connections>
-                        <action selector="didTapbasicRecordAndPlay:" destination="-1" eventType="touchUpInside" id="cdF-vo-GOz"/>
-                    </connections>
-                </button>
+                <tableView clipsSubviews="YES" contentMode="scaleToFill" alwaysBounceVertical="YES" style="plain" separatorStyle="default" rowHeight="-1" estimatedRowHeight="-1" sectionHeaderHeight="-1" estimatedSectionHeaderHeight="-1" sectionFooterHeight="-1" estimatedSectionFooterHeight="-1" translatesAutoresizingMaskIntoConstraints="NO" id="z5Q-0k-Mkn">
+                    <rect key="frame" x="0.0" y="88" width="414" height="676"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                </tableView>
             </subviews>
             <viewLayoutGuide key="safeArea" id="Q5M-cg-NOt"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
-                <constraint firstItem="mvM-Xl-lqB" firstAttribute="centerX" secondItem="Q5M-cg-NOt" secondAttribute="centerX" id="c9E-4w-xVy"/>
-                <constraint firstItem="mvM-Xl-lqB" firstAttribute="top" secondItem="Q5M-cg-NOt" secondAttribute="top" constant="213" id="gc2-6X-wxa"/>
+                <constraint firstItem="z5Q-0k-Mkn" firstAttribute="leading" secondItem="Q5M-cg-NOt" secondAttribute="leading" id="A1a-9x-vIr"/>
+                <constraint firstItem="Q5M-cg-NOt" firstAttribute="bottom" secondItem="z5Q-0k-Mkn" secondAttribute="bottom" constant="98" id="G40-ht-KtY"/>
+                <constraint firstItem="Q5M-cg-NOt" firstAttribute="trailing" secondItem="z5Q-0k-Mkn" secondAttribute="trailing" id="JOg-wd-3vc"/>
+                <constraint firstItem="z5Q-0k-Mkn" firstAttribute="top" secondItem="Q5M-cg-NOt" secondAttribute="top" constant="44" id="Oe8-WD-TYS"/>
             </constraints>
-            <point key="canvasLocation" x="299" y="66"/>
+            <point key="canvasLocation" x="298.55072463768118" y="65.625"/>
         </view>
     </objects>
     <resources>

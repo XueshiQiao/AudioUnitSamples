@@ -9,13 +9,7 @@
 #import <AVFoundation/AVFoundation.h>
 #import <AudioToolBox/AudioToolBox.h>
 #import <AVFAudio/AVFAudio.h>
-
-// A VP I/O unit's bus 1 connects to input hardware (microphone).
-static const AudioUnitElement kInputBus = 1;
-// A VP I/O unit's bus 0 connects to output hardware (speaker).
-static const AudioUnitElement kOutputBus = 0;
-static const int kRTCAudioSessionPreferredNumberOfChannels = 1;
-static const int kBytesPerSample = 2;
+#import "CommonUtils.h"
 
 @interface BasicRecordAndPlaySampleViewController () {
   AudioUnit _ioUnit;
@@ -35,27 +29,7 @@ static const int kBytesPerSample = 2;
 }
 
 - (IBAction)didTapStartRecordButton:(id)sender {
-  // audio session
-  NSError *error = nullptr;
-  [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayAndRecord error:&error];
-  if (error) {
-      NSLog(@"setCategory error:%@", error);
-  }
-  [[AVAudioSession sharedInstance] setPreferredIOBufferDuration:0.05 error:&error];
-  if (error) {
-      NSLog(@"setPreferredIOBufferDuration error:%@", error);
-  }
-  
-  [[AVAudioSession sharedInstance] setPreferredSampleRate:48000 error:&error];
-  if (error) {
-      NSLog(@"DEBUG %s %@ %@", __FUNCTION__, @"setPreferredSampleRate error", [error localizedDescription]);
-  }
-
-  // activate the audio session
-  [[AVAudioSession sharedInstance] setActive:YES error:&error];
-  if (error) {
-      NSLog(@"DEBUG %s %@ %@", __FUNCTION__, @"setActive error", [error localizedDescription]);
-  }
+  [CommonUtils setupAudioSessionForRecordAndPlay];
   
   if (![self createIOUnit]) {
     NSLog(@"create io unit failed");
@@ -202,19 +176,19 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
 
   // Specify the callback function that provides audio samples to the audio
   // unit.
-  AURenderCallbackStruct render_callback;
-  render_callback.inputProc = OnGetPlayoutData;
-  render_callback.inputProcRefCon = (__bridge void *)self;
-  result = AudioUnitSetProperty(
-      _ioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input,
-      kOutputBus, &render_callback, sizeof(render_callback));
-  if (result != noErr) {
-//    DisposeAudioUnit();
-//    RTCLogError(@"Failed to specify the render callback on the output bus. "
-//                 "Error=%ld.",
-//                (long)result);
-    return false;
-  }
+//  AURenderCallbackStruct render_callback;
+//  render_callback.inputProc = OnGetPlayoutData;
+//  render_callback.inputProcRefCon = (__bridge void *)self;
+//  result = AudioUnitSetProperty(
+//      _ioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input,
+//      kOutputBus, &render_callback, sizeof(render_callback));
+//  if (result != noErr) {
+////    DisposeAudioUnit();
+////    RTCLogError(@"Failed to specify the render callback on the output bus. "
+////                 "Error=%ld.",
+////                (long)result);
+//    return false;
+//  }
 
   // Disable AU buffer allocation for the recorder, we allocate our own.
   // TODO(henrika): not sure that it actually saves resource to make this call.
@@ -233,13 +207,13 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
 //   Specify the callback to be called by the I/O thread to us when input audio
 //   is available. The recorded samples can then be obtained by calling the
 //   AudioUnitRender() method.
-  AURenderCallbackStruct input_callback;
-  input_callback.inputProc = OnRecordedDataAvailable;
-  input_callback.inputProcRefCon = (__bridge void*)self;
-  result = AudioUnitSetProperty(_ioUnit,
-                                kAudioOutputUnitProperty_SetInputCallback,
-                                kAudioUnitScope_Global, kInputBus,
-                                &input_callback, sizeof(input_callback));
+//  AURenderCallbackStruct input_callback;
+//  input_callback.inputProc = OnRecordedDataAvailable;
+//  input_callback.inputProcRefCon = (__bridge void*)self;
+//  result = AudioUnitSetProperty(_ioUnit,
+//                                kAudioOutputUnitProperty_SetInputCallback,
+//                                kAudioUnitScope_Global, kInputBus,
+//                                &input_callback, sizeof(input_callback));
   return true;
 }
 
@@ -271,6 +245,26 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
   }
   
   result = AudioUnitAddRenderNotify(_ioUnit, ioUnitRenderNotify, (__bridge  void *)self);
+
+  
+  AudioUnitElement halUnitOutputBus  = 0;
+  AudioUnitElement outUnitInputElement = 0;
+  AudioUnitConnection halOutToOutUnitIn;
+  halOutToOutUnitIn.sourceAudioUnit    = _ioUnit;//halUnitInstance;
+  halOutToOutUnitIn.sourceOutputNumber = 0; //halUnitOutputBus;
+  halOutToOutUnitIn.destInputNumber    = outUnitInputElement;
+
+  result = AudioUnitSetProperty (_ioUnit,                         // connection destination
+                        kAudioUnitProperty_MakeConnection,  // property key
+                        kAudioUnitScope_Input,              // destination scope
+                        outUnitInputElement,                // destination element
+                        &halOutToOutUnitIn,                 // connection definition
+                        sizeof (halOutToOutUnitIn)
+                        );
+  if (result != noErr) {
+    NSLog(@"set kAudioUnitProperty_MakeConnection failed, %@", @(result));
+  }
+
 
   // Initialize the Voice Processing I/O unit instance.
   // Calls to AudioUnitInitialize() can fail if called back-to-back on
@@ -304,6 +298,7 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
 - (bool)startAudioUnit {
   OSStatus result = AudioOutputUnitStart(_ioUnit);
   if (result != noErr) {
+    NSLog(@"error AudioOutputUnitStart(), %@", @(result));
     return false;
   }
   return true;
