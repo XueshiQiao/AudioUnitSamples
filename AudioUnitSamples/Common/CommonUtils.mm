@@ -31,27 +31,27 @@
   NSError *error = nullptr;
   [[AVAudioSession sharedInstance] setCategory:category error:&error];
   if (error) {
-    NSLog(@"setCategory error:%@", error);
+    NSLog(@"======setCategory error:%@", error);
     return NO;
   }
   [[AVAudioSession sharedInstance] setPreferredIOBufferDuration:kPreferredIOBufferDuration error:&error];
   if (error) {
-    NSLog(@"setPreferredIOBufferDuration error:%@", error);
+    NSLog(@"======setPreferredIOBufferDuration error:%@", error);
     return NO;
   }
   
-  NSLog(@"acutally io buffer duration: %@", @([AVAudioSession sharedInstance].IOBufferDuration));
+  NSLog(@"======acutally io buffer duration: %@", @([AVAudioSession sharedInstance].IOBufferDuration));
   
   [[AVAudioSession sharedInstance] setPreferredSampleRate:kPreferredSampleRate error:&error];
   if (error) {
-    NSLog(@"DEBUG %s %@ %@", __FUNCTION__, @"setPreferredSampleRate error", [error localizedDescription]);
+    NSLog(@"======DEBUG %s %@ %@", __FUNCTION__, @"setPreferredSampleRate error", [error localizedDescription]);
     return NO;
   }
 
   // activate the audio session
   [[AVAudioSession sharedInstance] setActive:YES error:&error];
   if (error) {
-    NSLog(@"DEBUG %s %@ %@", __FUNCTION__, @"setActive error", [error localizedDescription]);
+    NSLog(@"======DEBUG %s %@ %@", __FUNCTION__, @"setActive error", [error localizedDescription]);
     return NO;
   }
   

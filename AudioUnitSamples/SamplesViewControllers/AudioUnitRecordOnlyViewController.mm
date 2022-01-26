@@ -31,7 +31,7 @@
   
   NSURL *documentFolderPath = [[[NSFileManager defaultManager] URLsForDirectory:NSDocumentDirectory inDomains:NSUserDomainMask] firstObject];
   self.filePath = [documentFolderPath URLByAppendingPathComponent:@"recorded_audio.wav"];
-  NSLog(@"file path: %@", self.filePath.absoluteString);
+  NSLog(@"======file path: %@", self.filePath.absoluteString);
   
   [CommonUtils setupAudioSessionForRecordAndPlay];
 }

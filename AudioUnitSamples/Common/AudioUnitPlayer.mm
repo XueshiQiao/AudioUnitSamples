@@ -1,16 +1,15 @@
 //
-//  AudioUnitRecorder.m
+//  AudioUnitPlayer.m
 //  AudioUnitSamples
 //
 //  Created by Joey on 2022/1/26.
 //
 
-#import "AudioUnitRecorder.h"
+#import "AudioUnitPlayer.h"
 
 namespace samples {
 
-AudioUnitRecorder::AudioUnitRecorder(AudioStreamBasicDescription format,
-                                     CFURLRef record_file_url) :
+AudioUnitPlayer::AudioUnitPlayer(AudioStreamBasicDescription format) :
     audio_format_(format) {
   audio_buffer_list_.mNumberBuffers = 1;
   audio_buffer_list_.mBuffers[0].mNumberChannels = format.mChannelsPerFrame;
@@ -22,7 +21,7 @@ AudioUnitRecorder::AudioUnitRecorder(AudioStreamBasicDescription format,
       malloc(audio_buffer_list_.mBuffers[0].mDataByteSize);
 };
 
-bool AudioUnitRecorder::SetUpAudioUnit() {
+bool AudioUnitPlayer::SetUpAudioUnit() {
   std::cout << "======setup audio unit" << std::endl;
   // Create an audio component description to identify the Voice Processing
   // I/O audio unit.
@@ -45,7 +44,8 @@ bool AudioUnitRecorder::SetUpAudioUnit() {
   }
 
   // Enable input on the input scope of the input element.
-  UInt32 enable_input = 1;
+  // 因为只播放, 所以不需要打开 input
+  UInt32 enable_input = 0;
   if (CheckHasError(AudioUnitSetProperty(io_unit_, kAudioOutputUnitProperty_EnableIO,
                                       kAudioUnitScope_Input, kInputBus, &enable_input,
                                       sizeof(enable_input)),
@@ -54,8 +54,7 @@ bool AudioUnitRecorder::SetUpAudioUnit() {
   }
 
   // Enable output on the output scope of the output element.
-  // 因为只录制, 所以关闭 output
-  UInt32 enable_output = 0;
+  UInt32 enable_output = 1;
   if (CheckHasError(AudioUnitSetProperty(io_unit_, kAudioOutputUnitProperty_EnableIO,
                                       kAudioUnitScope_Output, kOutputBus,
                                       &enable_output, sizeof(enable_output)),
@@ -75,6 +74,7 @@ bool AudioUnitRecorder::SetUpAudioUnit() {
 
   AudioStreamBasicDescription format = audio_format_;
   UInt32 size = sizeof(format);
+  
   // Set the format on the output scope of the input element/bus.
   if (CheckHasError(AudioUnitSetProperty(io_unit_, kAudioUnitProperty_StreamFormat,
                                       kAudioUnitScope_Output, kInputBus, &format, size),
@@ -89,23 +89,27 @@ bool AudioUnitRecorder::SetUpAudioUnit() {
     return false;
   }
   
-//   Specify the callback to be called by the I/O thread to us when input audio
-//   is available. The recorded samples can then be obtained by calling the
-//   AudioUnitRender() method.
-  
-  // input callback 是告诉我们已经采集到了数据, 需要我们使用 AudioUnitRender 从上游获取采集到的数据
-  // 注意回调到 OnRecordedDataIsAvailable 的参数里, ioData 是 nullptr, 所以在调用 AudioUnitRender
-  // 时, 不可使用回调里的 ioData 参数, 需要我们自己创建
-  AURenderCallbackStruct input_callback;
-  input_callback.inputProc = OnRecordedDataIsAvailable;
-  input_callback.inputProcRefCon = this;
+  /// Render Callback 是 IO unit 的 outpus 回调我们, 请求要播放的数据的回调, 我们在这个
+  /// 回调里, 填充满 ioData, 这部分数据将会被播放出来
+  /// 如果想静音的话, flag 需要设置为 kAudioUnitRenderAction_OutputIsSilence, 并且把
+  /// ioData 的数据全置为 0.
+  AURenderCallbackStruct render_callback;
+  render_callback.inputProc = OnAskingForMoreDataForPlayingRenderCallback;
+  render_callback.inputProcRefCon = this;
   if (CheckHasError(AudioUnitSetProperty(io_unit_,
-                                       kAudioOutputUnitProperty_SetInputCallback,
-                                       kAudioUnitScope_Global, kInputBus,
-                                      &input_callback, sizeof(input_callback)),
-                 "set input callback on inputbus: global scope")) {
+                                         kAudioUnitProperty_SetRenderCallback,
+                                         kAudioUnitScope_Input,
+                                         kOutputBus,
+                                         &render_callback,
+                                         sizeof(render_callback)),
+                 "set render callback on output bus: input scope")) {
     return false;
   }
+  
+  if (CheckHasError(AudioUnitAddRenderNotify(io_unit_, ioUnitRenderNotify, this), "add Render notify")) {
+    return false;
+  }
+
 
 // Initialize the Voice Processing I/O unit instance.
 // Calls to AudioUnitInitialize() can fail if called back-to-back on
@@ -133,33 +137,73 @@ bool AudioUnitRecorder::SetUpAudioUnit() {
   return has_error;
 }
 
-bool AudioUnitRecorder::StartAudioUnit() {
+bool AudioUnitPlayer::StartAudioUnit() {
   std::cout << "======start audio unit" << std::endl;
   return AudioOutputUnitStart(io_unit_);
 }
 
-void AudioUnitRecorder::StopAudioUnit() {
+void AudioUnitPlayer::StopAudioUnit() {
   std::cout << "======stop audio unit" << std::endl;
-  on_record_callback_ = nullptr;
+  on_ask_audio_buffer_callback_ = nullptr;
   CheckHasError(AudioOutputUnitStop(io_unit_), "stop io unit");
   CheckHasError(AudioUnitUninitialize(io_unit_), "deinit io unit");
   CheckHasError(AudioComponentInstanceDispose(io_unit_), "dispose io unit");
 }
 
-OSStatus AudioUnitRecorder::OnRecordedDataIsAvailable(void * inRefCon,
-                                   AudioUnitRenderActionFlags *ioActionFlags,
-                                   const AudioTimeStamp *inTimeStamp,
-                                   UInt32 inBusNumber,
-                                   UInt32 inNumberFrames,
-                                   AudioBufferList *ioData) {
-  samples::AudioUnitRecorder *wrapper = static_cast<samples::AudioUnitRecorder *>(inRefCon);
-  OSStatus status = CheckErrorStatus(AudioUnitRender(wrapper->io_unit_, ioActionFlags, inTimeStamp,
-                         inBusNumber, inNumberFrames, &wrapper->audio_buffer_list_),
-                          "AudioUnitRender call");
-  if (status == noErr && wrapper->on_record_callback_) {
-    wrapper->on_record_callback_(wrapper->audio_buffer_list_);
+OSStatus AudioUnitPlayer::OnAskingForMoreDataForPlayingRenderCallback(
+                                                                      void * inRefCon,
+                                                                      AudioUnitRenderActionFlags *ioActionFlags,
+                                                                      const AudioTimeStamp *inTimeStamp,
+                                                                      UInt32 inBusNumber,
+                                                                      UInt32 inNumberFrames,
+                                                                      AudioBufferList *ioData) {
+  AudioUnitPlayer *player = static_cast<AudioUnitPlayer*>(inRefCon);
+  bool eof = false;
+  player->on_ask_audio_buffer_callback_(ioData->mBuffers[0].mData,
+                                        ioData->mBuffers[0].mDataByteSize,
+                                        eof);
+  if (eof) {
+    //...
   }
-  return status;
+  //  samples::AudioUnitPlayer *wrapper = static_cast<samples::AudioUnitPlayer *>(inRefCon);
+  //  OSStatus status = CheckErrorStatus(AudioUnitRender(wrapper->io_unit_, ioActionFlags, inTimeStamp,
+  //                         inBusNumber, inNumberFrames, &wrapper->audio_buffer_list_),
+  //                          "AudioUnitRender call");
+  //  if (status == noErr && wrapper->on_record_callback_) {
+  //    wrapper->on_record_callback_(wrapper->audio_buffer_list_);
+  //  }
+  return noErr;
 }
+
+OSStatus AudioUnitPlayer::ioUnitRenderNotify(void *              inRefCon,
+                                      AudioUnitRenderActionFlags *  ioActionFlags,
+                                      const AudioTimeStamp *      inTimeStamp,
+                                      UInt32              inBusNumber,
+                                      UInt32              inNumberFrames,
+                                      AudioBufferList *        ioData)
+{
+//    // !!! this method is timing sensitive, better not add any wasting time code here, even nslog
+//    if (*ioActionFlags & kAudioUnitRenderAction_PostRender) {
+//    }
+  AudioUnitPlayer *player = static_cast<AudioUnitPlayer*>(inRefCon);
+    AudioUnitRenderActionFlags flags = *ioActionFlags;
+//    @constant        kAudioUnitRenderAction_PostRenderError
+//                    If this flag is set on the post-render call an error was returned by the
+//                    AUs render operation. In this case, the error can be retrieved through the
+//                    lastRenderError property and the audio data in ioData handed to the post-render
+//                    notification will be invalid.
+
+    if (flags & kAudioUnitRenderAction_PostRenderError) {
+        OSStatus ret;
+        UInt32 size = sizeof(OSStatus);
+//        OSStatus result = AudioUnitGetProperty(_audioUnit,
+//            kAudioUnitProperty_LastRenderError, kAudioUnitScope_Global, 0, &ret, &size);
+//
+        OSStatus status = AudioUnitGetProperty(player->io_unit_, kAudioUnitProperty_LastRenderError, kAudioUnitScope_Global, kOutputBus, &ret, &size);
+        NSLog(@"======status: %@, ret: %@", @(status), @(ret));
+    }
+    return noErr;
+}
+
 
 }  // namespace samples

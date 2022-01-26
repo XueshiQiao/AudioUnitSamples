@@ -24,6 +24,7 @@ static NSString const * const kSampleListTableViewCellID = @"SampleListTableView
   self.clazzes = @[
     NSClassFromString(@"BasicRecordAndPlaySampleViewController"),
     NSClassFromString(@"AudioUnitRecordOnlyViewController"),
+    NSClassFromString(@"AudioUnitPlayerViewController"),
     
   ];
   [self.samplesTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:(NSString *)kSampleListTableViewCellID];

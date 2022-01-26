@@ -15,7 +15,7 @@ AudioFileWriter::AudioFileWriter(CFURLRef file_ref,
 }
 
 void AudioFileWriter::CreateFile() {
-  std::cout << "create file @ " << CFURLGetString(file_ref_);
+  std::cout << "======create file @ " << CFURLGetString(file_ref_);
   AudioFileFlags flags = kAudioFileFlags_DontPageAlignAudioData | kAudioFileFlags_EraseFile;
   CheckHasError(AudioFileCreateWithURL(file_ref_, kAudioFileWAVEType, &format_, flags, &file_id_),
                 "Create audio file id");
@@ -28,7 +28,7 @@ void AudioFileWriter::WriteAudioPacket(const void *buffer, UInt32 size) {
 }
 
 void AudioFileWriter::CloseFile() {
-  std::cout << "close file";
+  std::cout << "======close file";
   CheckHasError(AudioFileClose(file_id_), "close file");
 }
 

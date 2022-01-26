@@ -28,13 +28,13 @@ inline bool CheckHasError(OSStatus status, const std::string& operation) {
   if (status == noErr) {
     return false;
   }
-  std::cout << "error occurred @ " << operation << ", error code: " << status << std::endl;
+  std::cout << "======error occurred @ " << operation << ", error code: " << status << std::endl;
   return true;
 }
 
 inline OSStatus CheckErrorStatus(OSStatus status, const std::string& operation) {
   if (status != noErr) {
-    std::cout << "error occurred @ " << operation << ", error code: " << status << std::endl;
+    std::cout << "======error occurred @ " << operation << ", error code: " << status << std::endl;
   }
   return status;
 }

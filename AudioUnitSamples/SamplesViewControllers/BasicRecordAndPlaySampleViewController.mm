@@ -32,13 +32,13 @@
   [CommonUtils setupAudioSessionForRecordAndPlay];
   
   if (![self createIOUnit]) {
-    NSLog(@"create io unit failed");
+    NSLog(@"======create io unit failed");
   }
   if (![self configAudioUnit]) {
-    NSLog(@"config audio unit failed");
+    NSLog(@"======config audio unit failed");
   }
   if (![self startAudioUnit]) {
-    NSLog(@"start audio unit failed");
+    NSLog(@"======start audio unit failed");
   }
 }
 
@@ -70,7 +70,7 @@ static OSStatus ioUnitRenderNotify(void *              inRefCon,
 //            kAudioUnitProperty_LastRenderError, kAudioUnitScope_Global, 0, &ret, &size);
 //
         OSStatus status = AudioUnitGetProperty(vc->_ioUnit, kAudioUnitProperty_LastRenderError, kAudioUnitScope_Global, kOutputBus, &ret, &size);
-        NSLog(@"status: %@, ret: %@", @(status), @(ret));
+        NSLog(@"======status: %@, ret: %@", @(status), @(ret));
     }
     return noErr;
 }
@@ -83,7 +83,7 @@ static OSStatus OnGetPlayoutData(void *              inRefCon,
                                       AudioBufferList *        ioData) {
   BasicRecordAndPlaySampleViewController *vc = (__bridge BasicRecordAndPlaySampleViewController *)inRefCon;
   AudioUnitRenderActionFlags flags = *ioActionFlags;
-  NSLog(@"====== %@", @(flags));
+  NSLog(@"============ %@", @(flags));
 //  *ioActionFlags |= kAudioUnitRenderAction_OutputIsSilence;
   for (UInt32 i = 0; i< ioData->mNumberBuffers; ++i) {
     memcpy(ioData->mBuffers[i].mData, vc->_buffer.mBuffers[i].mData, vc->_buffer.mBuffers[i].mDataByteSize);
@@ -101,7 +101,7 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
   BasicRecordAndPlaySampleViewController *vc = (__bridge BasicRecordAndPlaySampleViewController *)inRefCon;
   OSStatus status = AudioUnitRender(vc->_ioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &vc->_buffer);
   if (status != noErr) {
-    NSLog(@"AudioUnitRender error: %@", @(status));
+    NSLog(@"======AudioUnitRender error: %@", @(status));
   }
   return status;
   
@@ -245,24 +245,9 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
   }
   
   result = AudioUnitAddRenderNotify(_ioUnit, ioUnitRenderNotify, (__bridge  void *)self);
-
   
-  AudioUnitElement halUnitOutputBus  = 0;
-  AudioUnitElement outUnitInputElement = 0;
-  AudioUnitConnection halOutToOutUnitIn;
-  halOutToOutUnitIn.sourceAudioUnit    = _ioUnit;//halUnitInstance;
-  halOutToOutUnitIn.sourceOutputNumber = 0; //halUnitOutputBus;
-  halOutToOutUnitIn.destInputNumber    = outUnitInputElement;
-
-  result = AudioUnitSetProperty (_ioUnit,                         // connection destination
-                        kAudioUnitProperty_MakeConnection,  // property key
-                        kAudioUnitScope_Input,              // destination scope
-                        outUnitInputElement,                // destination element
-                        &halOutToOutUnitIn,                 // connection definition
-                        sizeof (halOutToOutUnitIn)
-                        );
   if (result != noErr) {
-    NSLog(@"set kAudioUnitProperty_MakeConnection failed, %@", @(result));
+    NSLog(@"======set kAudioUnitProperty_MakeConnection failed, %@", @(result));
   }
 
 
@@ -298,7 +283,7 @@ static OSStatus OnRecordedDataAvailable(void *              inRefCon,
 - (bool)startAudioUnit {
   OSStatus result = AudioOutputUnitStart(_ioUnit);
   if (result != noErr) {
-    NSLog(@"error AudioOutputUnitStart(), %@", @(result));
+    NSLog(@"======error AudioOutputUnitStart(), %@", @(result));
     return false;
   }
   return true;

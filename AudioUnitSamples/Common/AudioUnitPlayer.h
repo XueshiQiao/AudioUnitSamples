@@ -1,5 +1,5 @@
 //
-//  AudioUnitRecorder.h
+//  AudioUnitPlayer.h
 //  AudioUnitSamples
 //
 //  Created by Joey on 2022/1/26.
@@ -14,14 +14,14 @@
 
 namespace samples {
   
-class AudioUnitRecorder {
+class AudioUnitPlayer {
 public:
-  using OnRecordAudioBufferCallback =
-    std::function<void(const AudioBufferList& recorded_audio_buffer)>;
+  using OnAskForAudioBufferCallback =
+    std::function<void(void* data, size_t size, bool& eof)>;
   
-  AudioUnitRecorder(AudioStreamBasicDescription format, CFURLRef record_file_url);
+  AudioUnitPlayer(AudioStreamBasicDescription format);
   
-  virtual ~AudioUnitRecorder() {
+  virtual ~AudioUnitPlayer() {
     free(audio_buffer_list_.mBuffers[0].mData);
   }
   
@@ -31,26 +31,32 @@ public:
   
   void StopAudioUnit();
 
-  void SetOnRecordAudioBufferCallback(OnRecordAudioBufferCallback callback) {
+  void SetOnRecordAudioBufferCallback(OnAskForAudioBufferCallback callback) {
     std::cout << "======set audio unit wrapper OnRecordAudioBufferCallback" << std::endl;
-    on_record_callback_ = callback;
+    on_ask_audio_buffer_callback_ = callback;
   }
   
-  static OSStatus OnRecordedDataIsAvailable(void * inRefCon,
+  static OSStatus OnAskingForMoreDataForPlayingRenderCallback(void * inRefCon,
                                             AudioUnitRenderActionFlags *ioActionFlags,
                                             const AudioTimeStamp *inTimeStamp,
                                             UInt32 inBusNumber,
                                             UInt32 inNumberFrames,
                                             AudioBufferList *ioData);
+  
+  static OSStatus ioUnitRenderNotify(void *              inRefCon,
+                                        AudioUnitRenderActionFlags *  ioActionFlags,
+                                        const AudioTimeStamp *      inTimeStamp,
+                                        UInt32              inBusNumber,
+                                        UInt32              inNumberFrames,
+                                     AudioBufferList *        ioData);
 
 protected:
   
   AudioUnit io_unit_;
-  AudioFileID audio_file_;
   AudioBufferList audio_buffer_list_;
   AudioStreamBasicDescription audio_format_;
   
-  OnRecordAudioBufferCallback on_record_callback_{nullptr};
+  OnAskForAudioBufferCallback on_ask_audio_buffer_callback_{nullptr};
 };
   
 }  // samples
