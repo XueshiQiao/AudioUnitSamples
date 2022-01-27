@@ -20,12 +20,11 @@
   std::unique_ptr<samples::AudioFileReader> file_reader_;
   std::unique_ptr<samples::AudioFileWriter> file_writer_;
 
-  AudioBufferList vocal_audio_buffer_;
-  AudioBufferList music_audio_buffer_;
+  AudioBufferList vocal_audio_buffer_;  // recorded pure vocal buffer
+  AudioBufferList music_audio_buffer_;  // music buffer read from local file
   
-  AudioBufferList iounit_output_mixed_audio_buffer_;
-  AudioBufferList export_mixed_audio_buffer_;
-
+  AudioBufferList iounit_output_mixed_audio_buffer_;   // music buffer + vocal buffer (if ear monitor is enabled)
+  AudioBufferList export_mixed_audio_buffer_;  // music + vocal
 }
 @property (nonatomic, strong) NSURL *musicFileURL;
 @property (nonatomic, strong) NSURL *exportFileURL;
@@ -105,6 +104,9 @@
   audio_unit_rec_player_->StopAudioUnit();
   file_reader_->CloseFile();
   file_writer_->CloseFile();
+}
+- (IBAction)monitorStateChanged:(UISwitch *)sender {
+  self.monitorEnabled = sender.isOn;
 }
 
 @end

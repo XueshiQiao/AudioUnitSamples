@@ -35,16 +35,42 @@
                         <action selector="didTapStopRecordButton:" destination="-1" eventType="touchUpInside" id="877-Nb-I1m"/>
                     </connections>
                 </button>
+                <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="Ear Monitor Enabled:" textAlignment="natural" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" translatesAutoresizingMaskIntoConstraints="NO" id="g2f-rr-Ckz">
+                    <rect key="frame" x="41" y="443" width="158" height="21"/>
+                    <fontDescription key="fontDescription" type="system" pointSize="17"/>
+                    <nil key="textColor"/>
+                    <nil key="highlightedColor"/>
+                </label>
+                <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="4Ce-Uc-TVc">
+                    <rect key="frame" x="199" y="436" width="16" height="35"/>
+                    <color key="backgroundColor" systemColor="systemBackgroundColor"/>
+                    <constraints>
+                        <constraint firstAttribute="height" constant="35" id="CUy-pG-BB4"/>
+                        <constraint firstAttribute="width" constant="16" id="t9s-hq-ke9"/>
+                    </constraints>
+                </view>
+                <switch opaque="NO" contentMode="scaleToFill" horizontalHuggingPriority="750" verticalHuggingPriority="750" contentHorizontalAlignment="center" contentVerticalAlignment="center" on="YES" translatesAutoresizingMaskIntoConstraints="NO" id="LsD-cv-nh4">
+                    <rect key="frame" x="215" y="438" width="51" height="31"/>
+                    <connections>
+                        <action selector="monitorStateChanged:" destination="-1" eventType="valueChanged" id="29j-At-fbl"/>
+                    </connections>
+                </switch>
             </subviews>
             <viewLayoutGuide key="safeArea" id="Q5M-cg-NOt"/>
             <color key="backgroundColor" systemColor="systemBackgroundColor"/>
             <constraints>
+                <constraint firstItem="g2f-rr-Ckz" firstAttribute="centerY" secondItem="4Ce-Uc-TVc" secondAttribute="centerY" id="1gY-0b-ApW"/>
+                <constraint firstItem="LsD-cv-nh4" firstAttribute="centerY" secondItem="4Ce-Uc-TVc" secondAttribute="centerY" id="G1A-gu-08X"/>
                 <constraint firstItem="C5D-7Y-GDb" firstAttribute="top" secondItem="Q5M-cg-NOt" secondAttribute="top" constant="253" id="Oqb-Px-Qgo"/>
+                <constraint firstItem="4Ce-Uc-TVc" firstAttribute="top" secondItem="1Bf-N6-6Jc" secondAttribute="bottom" constant="40" id="WBb-TF-Efv"/>
                 <constraint firstItem="1Bf-N6-6Jc" firstAttribute="top" secondItem="C5D-7Y-GDb" secondAttribute="bottom" constant="37" id="Wc4-ws-ECm"/>
+                <constraint firstItem="LsD-cv-nh4" firstAttribute="leading" secondItem="4Ce-Uc-TVc" secondAttribute="trailing" id="Yhw-pu-0Rx"/>
+                <constraint firstItem="4Ce-Uc-TVc" firstAttribute="leading" secondItem="g2f-rr-Ckz" secondAttribute="trailing" id="d9L-Mz-srk"/>
                 <constraint firstItem="C5D-7Y-GDb" firstAttribute="centerX" secondItem="Q5M-cg-NOt" secondAttribute="centerX" id="vEG-Zg-wxw"/>
+                <constraint firstItem="4Ce-Uc-TVc" firstAttribute="centerX" secondItem="1Bf-N6-6Jc" secondAttribute="centerX" id="wAm-V2-trj"/>
                 <constraint firstItem="1Bf-N6-6Jc" firstAttribute="centerX" secondItem="C5D-7Y-GDb" secondAttribute="centerX" id="y3h-Mj-DYD"/>
             </constraints>
-            <point key="canvasLocation" x="132" y="131"/>
+            <point key="canvasLocation" x="131.8840579710145" y="130.58035714285714"/>
         </view>
     </objects>
     <resources>
