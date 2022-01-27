@@ -39,6 +39,12 @@ inline OSStatus CheckErrorStatus(OSStatus status, const std::string& operation) 
   return status;
 }
 
+static void MixSInt16AudioSamples(SInt16 *dst, SInt16 *src, float dst_factor, float src_factor, size_t size_in_bytes) {
+  for (size_t i = 0; i < size_in_bytes / sizeof(SInt16); i++) {
+    *(dst + i) = static_cast<SInt16>(*(dst + i) * dst_factor) +
+                 static_cast<SInt16>(*(src + i) * src_factor);
+  }
+}
 
 @interface CommonUtils : NSObject
 
