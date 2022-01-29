@@ -6,13 +6,15 @@
 //
 
 #import <AVFoundation/AVFoundation.h>
+#import <memory>
+#import "AudioFileReader.h"
 
 namespace samples {
 
 class AUGraphRecorderPlayer {
   
 public:
-  AUGraphRecorderPlayer(AudioStreamBasicDescription format);
+  AUGraphRecorderPlayer(AudioStreamBasicDescription format, CFURLRef music_file_url);
   virtual ~AUGraphRecorderPlayer();
   
   void InitializeGraph();
@@ -26,6 +28,13 @@ public:
 private:
   
   static OSStatus OnAskForVocalAudioBufferRenderCallback(void *inRefCon,
+                               AudioUnitRenderActionFlags *ioActionFlags,
+                               const AudioTimeStamp *inTimeStamp,
+                               UInt32 inBusNumber,
+                               UInt32 inNumberFrames,
+                               AudioBufferList *ioData);
+  
+  static OSStatus OnAskForMusicAudioBufferRenderCallback(void *inRefCon,
                                AudioUnitRenderActionFlags *ioActionFlags,
                                const AudioTimeStamp *inTimeStamp,
                                UInt32 inBusNumber,
@@ -50,7 +59,9 @@ private:
   AudioStreamBasicDescription format_;
   AudioBufferList buffer_;
   
-  AUGraph graph_;
+  std::unique_ptr<AudioFileReader> music_file_reader_;
+  
+  AUGraph graph_{nullptr};
   
   AUNode io_node_;
   AudioUnit io_unit_;

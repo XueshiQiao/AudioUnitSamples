@@ -17,7 +17,7 @@
 #import "AUGraphRecorderPlayer.h"
 
 @interface AUGraphRecordAndPlaySampleViewController () {
-  std::unique_ptr<samples::AUGraphRecorderPlayer> audio_unit_rec_player_;
+  std::unique_ptr<samples::AUGraphRecorderPlayer> augraph_rec_player_;
   std::unique_ptr<samples::AudioFileReader> file_reader_;
   std::unique_ptr<samples::AudioFileWriter> file_writer_;
 
@@ -76,7 +76,8 @@
                                                             [CommonUtils commonRecorderAudioFormat]);
   file_writer_->CreateFile();
   
-  audio_unit_rec_player_ = std::make_unique<samples::AUGraphRecorderPlayer>([CommonUtils commonRecorderAudioFormat]);
+  augraph_rec_player_ = std::make_unique<samples::AUGraphRecorderPlayer>([CommonUtils commonRecorderAudioFormat],
+                                                                            (__bridge CFURLRef)self.musicFileURL);
 //  audio_unit_rec_player_->SetOnRecordAudioBufferCallback([=](const AudioBufferList& audio_buffer) {
 //    CopyAudioBufferListDatas(vocal_audio_buffer_, audio_buffer);
 //    bool eof = false;
@@ -99,12 +100,12 @@
 //
 //  audio_unit_rec_player_->SetUpAudioUnit();
 //  audio_unit_rec_player_->StartAudioUnit();
-  audio_unit_rec_player_->InitializeGraph();
-  audio_unit_rec_player_->Start();
+  augraph_rec_player_->InitializeGraph();
+  augraph_rec_player_->Start();
 }
 
 - (IBAction)didTapStopRecordButton:(id)sender {
-  audio_unit_rec_player_->Stop();
+  augraph_rec_player_->Stop();
   file_reader_->CloseFile();
   file_writer_->CloseFile();
 }
