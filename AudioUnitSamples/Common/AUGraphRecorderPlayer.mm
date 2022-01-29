@@ -21,16 +21,22 @@ constexpr UInt32 kMixerUniqueOutputElementNumber = 0;
 
 namespace samples {
     
-AUGraphRecorderPlayer::AUGraphRecorderPlayer(AudioStreamBasicDescription format, CFURLRef music_file_url) :
-  format_(format), music_file_reader_(std::make_unique<AudioFileReader>(music_file_url, format)) {
-  InitAudioBufferList(&buffer_);
+AUGraphRecorderPlayer::AUGraphRecorderPlayer(AudioStreamBasicDescription format,
+                                             CFURLRef music_file_url,
+                                             CFURLRef export_file_url) :
+    format_(format),
+    music_file_reader_(std::make_unique<AudioFileReader>(music_file_url, format)),
+    export_file_writer_(std::make_unique<AudioFileWriter>(export_file_url, format)) {
+  InitAudioBufferList(&vocal_buffer_);
+  InitAudioBufferList(&mixed_buffer_for_pushing_);
 }
 
 AUGraphRecorderPlayer::~AUGraphRecorderPlayer() {
   if (IsRunning()) {
     Stop();
   }
-  DisposeAudioBufferList(&buffer_);
+  DisposeAudioBufferList(&vocal_buffer_);
+  DisposeAudioBufferList(&mixed_buffer_for_pushing_);
 }
 
 void AUGraphRecorderPlayer::InitializeGraph() {
@@ -106,11 +112,10 @@ void AUGraphRecorderPlayer::InitializeGraph() {
                                        kMixerVocalInputElementNumber, &format_, sizeof(AudioStreamBasicDescription)),
                   "set format on mixex_unit_:0:input_scope");
     
+    // Note: 这里指定的 format 和音乐文件的实际格式必须是一致的
     CheckHasError(AudioUnitSetProperty(mixer_unit_, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Input,
                                        kMixerMusicInputElementNumber, &format_, sizeof(AudioStreamBasicDescription)),
                   "set format on mixex_unit_:0:input_scope");
-
-//    OnAskForMusicAudioBufferRenderCallback
     
     CheckHasError(AudioUnitSetProperty(mixer_unit_, kAudioUnitProperty_StreamFormat, kAudioUnitScope_Output,
                                        kMixerUniqueOutputElementNumber, &format_, sizeof(AudioStreamBasicDescription)),
@@ -126,16 +131,17 @@ void AUGraphRecorderPlayer::InitializeGraph() {
                                         kMixerMusicInputElementNumber, enable_mixer_input, in_buffer_offset_in_frames),
                   "enable mixer input 0");
     
+    // 这里配置 element 0, 也就是人声的数据回调, 在这里回调里提供人声 sample 给 mixer
     AURenderCallbackStruct mixer_vocal_input_element0_render_callback {
       .inputProc = OnAskForVocalAudioBufferRenderCallback,
       .inputProcRefCon = this
     };
-    // Note:
-    // 这里的 InputCallback 不等价于 AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, ...)
+    // Note: 这里的 SetNodeInputCallback 不等价于 AudioUnitSetProperty(unit, kAudioOutputUnitProperty_SetInputCallback, ...)
     // 而是等价于 AudioUnitSetProperty(unit, kAudioUnitProperty_SetRenderCallback, ...)
     CheckHasError(AUGraphSetNodeInputCallback(graph_, mixer_node_, kMixerVocalInputElementNumber, &mixer_vocal_input_element0_render_callback),
                   "set mixer_vocal_input_element0 render callback");
     
+    // 同上, 这里配置 element 1, 也即是伴奏的数据回调
     AURenderCallbackStruct mixer_music_input_element1_render_callback {
       .inputProc = OnAskForMusicAudioBufferRenderCallback,
       .inputProcRefCon = this
@@ -154,13 +160,16 @@ void AUGraphRecorderPlayer::Start() {
     return;
   }
   music_file_reader_->OpenFile();
+  export_file_writer_->CreateFile();
   CheckHasError(AUGraphStart(graph_), "start augraph");
 }
 
 void AUGraphRecorderPlayer::Stop() {
   if (graph_ && IsRunning()) {
     CheckHasError(AUGraphStop(graph_), "stop augraph");
+    
     music_file_reader_->CloseFile();
+    export_file_writer_->CloseFile();
     
     Boolean graphIsInitialized;
     if (!CheckHasError(AUGraphIsInitialized(graph_, &graphIsInitialized), "check AUGraphIsInitialized")
@@ -192,7 +201,13 @@ OSStatus AUGraphRecorderPlayer::OnAskForVocalAudioBufferRenderCallback(void *inR
                                                                        UInt32 inNumberFrames,
                                                                        AudioBufferList *ioData) {
   AUGraphRecorderPlayer *THIS = static_cast<AUGraphRecorderPlayer *>(inRefCon);
-  CopyAudioBufferListDatas(*ioData, THIS->buffer_);
+  CopyAudioBufferListDatas(*ioData, THIS->vocal_buffer_);
+  CopyAudioBufferListDatas(THIS->mixed_buffer_for_pushing_, THIS->vocal_buffer_);
+  
+  // 放在异步serial queue更好
+  THIS->export_file_writer_->WriteAudioPacket(THIS->mixed_buffer_for_pushing_.mBuffers[0].mData,
+                                              THIS->mixed_buffer_for_pushing_.mBuffers[0].mDataByteSize);
+
   return noErr;
 }
 
@@ -205,6 +220,7 @@ OSStatus AUGraphRecorderPlayer::OnAskForMusicAudioBufferRenderCallback(void *inR
   AUGraphRecorderPlayer *THIS = static_cast<AUGraphRecorderPlayer *>(inRefCon);
   bool eof = false;
   THIS->music_file_reader_->ReadAudioFrame(ioData->mBuffers[0].mDataByteSize, ioData->mBuffers[0].mData, eof);
+  MixAudioBufferList(THIS->mixed_buffer_for_pushing_, *ioData, 0.6, 0.4);
   return noErr;
 }
 
@@ -214,10 +230,9 @@ OSStatus AUGraphRecorderPlayer::OnIOUnitAudioBufferIsAvailable(void *inRefCon,
                                                                UInt32 inBusNumber,
                                                                UInt32 inNumberFrames,
                                                                AudioBufferList *ioData) {
-  
   AUGraphRecorderPlayer *THIS = static_cast<AUGraphRecorderPlayer *>(inRefCon);
   OSStatus ret = CheckErrorStatus(AudioUnitRender(THIS->io_unit_, ioActionFlags, inTimeStamp,
-                                                  inBusNumber, inNumberFrames, &THIS->buffer_),
+                                                  inBusNumber, inNumberFrames, &THIS->vocal_buffer_),
                                   "render input callback");
   return ret;
 }
@@ -231,15 +246,14 @@ OSStatus AUGraphRecorderPlayer::OnIOUnitRenderNotify(void *              inRefCo
   AUGraphRecorderPlayer *rec_and_player = static_cast<AUGraphRecorderPlayer *>(inRefCon);
   AudioUnitRenderActionFlags flags = *ioActionFlags;
   if (flags & kAudioUnitRenderAction_PostRenderError) {
-    OSStatus ret = noErr;
+    OSStatus last_render_error = noErr;
     UInt32 size = sizeof(OSStatus);
-    OSStatus status = CheckHasError(AudioUnitGetProperty(rec_and_player->io_unit_, kAudioUnitProperty_LastRenderError,
-                                                         kAudioUnitScope_Global, kOutputBus, &ret, &size),
-                                    "get last render error");
-    NSLog(@"======PostRenderError, get status: %@, last render error ret: %@", @(status), @(ret));
+    CheckHasError(AudioUnitGetProperty(rec_and_player->io_unit_, kAudioUnitProperty_LastRenderError,
+                                                         kAudioUnitScope_Global, kOutputBus, &last_render_error, &size),
+                     "get last render error");
+    CheckHasError(last_render_error, "last render error");
   }
   return noErr;
 }
-
   
 } // namespace samples

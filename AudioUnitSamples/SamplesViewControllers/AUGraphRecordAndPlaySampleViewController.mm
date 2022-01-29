@@ -61,7 +61,7 @@
   self.musicFileURL = [documentFolderPath URLByAppendingPathComponent:@"recorded_audio_num.wav"];
   NSLog(@"======read file path: %@", self.musicFileURL.absoluteString);
   
-  self.exportFileURL = [documentFolderPath URLByAppendingPathComponent:@"recorded_export.wav"];
+  self.exportFileURL = [documentFolderPath URLByAppendingPathComponent:@"recorded_export_augraph.wav"];
 }
 
 - (IBAction)didTapStartRecordButton:(id)sender {
@@ -77,7 +77,8 @@
   file_writer_->CreateFile();
   
   augraph_rec_player_ = std::make_unique<samples::AUGraphRecorderPlayer>([CommonUtils commonRecorderAudioFormat],
-                                                                            (__bridge CFURLRef)self.musicFileURL);
+                                                                         (__bridge CFURLRef)self.musicFileURL,
+                                                                         (__bridge CFURLRef)self.exportFileURL);
 //  audio_unit_rec_player_->SetOnRecordAudioBufferCallback([=](const AudioBufferList& audio_buffer) {
 //    CopyAudioBufferListDatas(vocal_audio_buffer_, audio_buffer);
 //    bool eof = false;
