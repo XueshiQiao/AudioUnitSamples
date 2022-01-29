@@ -35,6 +35,7 @@
 		D4F8169527A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = D4F8169227A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.xib */; };
 		D4F8169627A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F8169327A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.mm */; };
 		D4F8169827A562220017C4B8 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = D4F8169727A562220017C4B8 /* CoreAudio.framework */; };
+		D4F8169B27A57FCA0017C4B8 /* AUGraphMixer.mm in Sources */ = {isa = PBXBuildFile; fileRef = D4F8169A27A57FCA0017C4B8 /* AUGraphMixer.mm */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -86,6 +87,8 @@
 		D4F8169327A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = AUGraphRecordAndPlaySampleViewController.mm; sourceTree = "<group>"; };
 		D4F8169427A462150017C4B8 /* AUGraphRecordAndPlaySampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AUGraphRecordAndPlaySampleViewController.h; sourceTree = "<group>"; };
 		D4F8169727A562220017C4B8 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
+		D4F8169927A57FCA0017C4B8 /* AUGraphMixer.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AUGraphMixer.h; sourceTree = "<group>"; };
+		D4F8169A27A57FCA0017C4B8 /* AUGraphMixer.mm */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.objcpp; path = AUGraphMixer.mm; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +195,8 @@
 				D4F8168827A27D4B0017C4B8 /* AudioUnitRecorderAndPlayerComplex.mm */,
 				D4F8168F27A377730017C4B8 /* AUGraphRecorderPlayer.h */,
 				D4F8169027A377730017C4B8 /* AUGraphRecorderPlayer.mm */,
+				D4F8169927A57FCA0017C4B8 /* AUGraphMixer.h */,
+				D4F8169A27A57FCA0017C4B8 /* AUGraphMixer.mm */,
 			);
 			path = Common;
 			sourceTree = "<group>";
@@ -281,6 +286,7 @@
 				D40C2C7827A1990C002E0ABA /* AudioUnitPlayer.mm in Sources */,
 				D4F8168927A27D4B0017C4B8 /* AudioUnitRecorderAndPlayerComplex.mm in Sources */,
 				D40C2C8327A1B77B002E0ABA /* AudioUnitRecorderAndPlayer.mm in Sources */,
+				D4F8169B27A57FCA0017C4B8 /* AUGraphMixer.mm in Sources */,
 				D400303C279FEDF3002E9D53 /* BasicRecordAndPlaySampleViewController.mm in Sources */,
 				D40C2C7227A16668002E0ABA /* AudioFileWriter.mm in Sources */,
 				D40C2C6A27A15022002E0ABA /* AudioUnitRecordOnlyViewController.mm in Sources */,
