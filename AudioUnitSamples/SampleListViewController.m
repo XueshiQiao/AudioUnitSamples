@@ -26,7 +26,7 @@ static NSString const * const kSampleListTableViewCellID = @"SampleListTableView
     NSClassFromString(@"AudioUnitRecordOnlyViewController"),
     NSClassFromString(@"BasicRecordAndPlaySampleViewController"),
     NSClassFromString(@"ComplexRecordAndPlaySampleViewController"),
-    
+    NSClassFromString(@"AUGraphRecordAndPlaySampleViewController"),
   ];
   [self.samplesTableView registerClass:[UITableViewCell class] forCellReuseIdentifier:(NSString *)kSampleListTableViewCellID];
   self.samplesTableView.delegate = self;
